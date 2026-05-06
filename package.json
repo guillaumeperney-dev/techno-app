@@ -1,0 +1,13 @@
+{
+  "name": "paris-techno-business-plan-interview",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack React and Node.js interview app for building a techno event company business plan in Paris.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
