@@ -4,15 +4,15 @@ const path = require("path");
 const crypto = require("crypto");
 
 // ✅ SUPABASE
-const { createClient } = require('@supabase/supabase-js');
+const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(
-  'https://iqxjehtdaayzvxkhgjpv.supabase.co',
-  'sb_publishable_8xjgueVFW8zZ-yRKYZKHJw__OVlWIQr'
+  "https://iqxjehtdaayzvxkhgjpv.supabase.co",
+  "sb_publishable_8xjgueVFW8zZ-yRKYZKHJw__OVlWIQr"
 );
 
 const PORT = Number(process.env.PORT || 3000);
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = "0.0.0.0"; // 🔥 obligatoire pour Render
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, "public");
 
@@ -89,35 +89,31 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
   try {
-    // ✅ GET depuis Supabase
+    // ✅ GET interviews
     if (url.pathname === "/api/interviews" && req.method === "GET") {
       const { data, error } = await supabase
-        .from('interviews')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("interviews")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("GET ERROR:", error);
+        console.log("❌ GET ERROR:", error);
         return sendJson(res, 500, { error });
       }
 
-      sendJson(res, 200, { interviews: data });
-      return;
+      return sendJson(res, 200, { interviews: data });
     }
 
-    // ✅ POST vers Supabase
+    // ✅ POST interview
     if (url.pathname === "/api/interviews" && req.method === "POST") {
-
-      console.log("🔥 POST /api/interviews appelé");
+      console.log("🔥 POST appelé");
 
       const payload = await readJson(req);
       console.log("📦 PAYLOAD:", payload);
 
-      const now = new Date().toISOString();
-
       const interview = {
         id: payload.id || crypto.randomUUID(),
-        created_at: now,
+        created_at: new Date().toISOString(),
         data: {
           label: payload.label || "Unnamed interview",
           respondents: payload.respondents || [],
@@ -127,31 +123,29 @@ const server = http.createServer(async (req, res) => {
         }
       };
 
-      console.log("📤 DATA ENVOYÉE À SUPABASE:", interview);
+      console.log("📤 ENVOI SUPABASE:", interview);
 
       const { error } = await supabase
-        .from('interviews')
+        .from("interviews")
         .insert([interview]);
 
-      console.log("🧠 SUPABASE ERROR:", error);
-
       if (error) {
+        console.log("❌ SUPABASE ERROR:", error);
         return sendJson(res, 500, { error });
       }
 
-      sendJson(res, 200, { ok: true });
-      return;
+      return sendJson(res, 200, { ok: true });
     }
 
-    // STATIC FILES
+    // fichiers statiques
     serveStatic(req, res);
 
   } catch (error) {
-    console.error("SERVER ERROR:", error);
+    console.log("💥 SERVER ERROR:", error);
     sendJson(res, 500, { ok: false, error: error.message });
   }
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Paris Techno Business Plan Interview running at http://${HOST}:${PORT}`);
+  console.log(`🚀 Server running on http://${HOST}:${PORT}`);
 });
