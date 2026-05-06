@@ -112,7 +112,7 @@ const server = http.createServer(async (req, res) => {
       console.log("📦 PAYLOAD:", payload);
 
       const interview = {
-        id: payload.id || crypto.randomUUID(),
+        id: crypto.randomUUID(),
         created_at: new Date().toISOString(),
         data: {
           label: payload.label || "Unnamed interview",
